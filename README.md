@@ -7,7 +7,7 @@ A simple Python CLI that helps you keep track of the tasks in your life.
 - [ ] Add multiple task creation functionality
 - [X] Allow for marking as Not done
 - [ ] Add multiple task deletion functionality
-- [ ] Add a "help" key for command guide
+- [X] Add a "help" key for command guide
 ## Future Plans
 * Add folder and subtask functionality
 * Add due date functionality
