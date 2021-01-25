@@ -32,6 +32,17 @@ def display():
         print(line, "\n")
 
 
+# Help information
+def cmd_help():
+    print("-"*55)
+    print("new", "."*7, "Creates new task\n\t", r"'new [task name]'", end="\n\n")
+    print("edit", "."*6, "Edits existing task\n\t", r"'edit [task index] [new task name]'", end="\n\n")
+    print("del", "."*7, "Deletes existing task(s)\n\t", r"'del [task index]' or 'del all'", end="\n\n")
+    print("done", "."*6, "Marks existing task as done or not done\n\t", r"'done [task index]'", end="\n\n")
+    print("help", "."*6, "Displays command help dialog\n\t", r"'help'")
+    print("-"*55)
+
+
 # Collects command and continues to prompt until valid command is given,
 # returns valid command in list form
 def valid_command():
@@ -45,6 +56,7 @@ def valid_command():
         "edit",
         "del",
         "done",
+        "help",
         "exit"
     ]
     try:
@@ -88,6 +100,9 @@ def valid_command():
     except IndexError:
         if command[0] == "exit":
             exit()
+        elif command[0] == "help":
+            cmd_help()
+            return valid_command()
 
 
 # Creates new task
