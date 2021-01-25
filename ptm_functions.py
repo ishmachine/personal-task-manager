@@ -134,7 +134,10 @@ def del_task(command):
         dtasks = json.loads(f.read())
 
     # Removes task from task as dict
-    dtasks['tasks'].remove(dtasks['tasks'][int(command[1]) - 1])
+    if command[1] == "all":
+        dtasks['tasks'] = []
+    else:
+        dtasks['tasks'].remove(dtasks['tasks'][int(command[1]) - 1])
 
     # Writes new file as dict to file
     jtasks = json.dumps(dtasks, indent=2)
