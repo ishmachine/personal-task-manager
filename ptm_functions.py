@@ -145,14 +145,19 @@ def del_task(command):
         f.write(jtasks)
 
 
-# Marks task as done
+# Marks task as done or not done
+# If task is marked done, it will change to not done
+# If task is marked not done, it will change to done
 def mark_done(command):
     # Loads file as dict
     with open("tasks.json") as f:
         dtasks = json.loads(f.read())
 
     # Edits tasks as dict
-    dtasks['tasks'][int(command[1]) - 1]['is_done'] = True
+    if dtasks['tasks'][int(command[1]) - 1]['is_done'] is False:
+        dtasks['tasks'][int(command[1]) - 1]['is_done'] = True
+    elif dtasks['tasks'][int(command[1]) - 1]['is_done'] is True:
+        dtasks['tasks'][int(command[1]) - 1]['is_done'] = False
 
     # Writes new file as dict to file
     jtasks = json.dumps(dtasks, indent=2)
