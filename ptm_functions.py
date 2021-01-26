@@ -1,5 +1,6 @@
 import json
 import os
+from calendar_feature import esc
 
 
 # Clears the screen
@@ -26,16 +27,17 @@ def display():
         line = "[" + str(index) + "] " + task['task_name'] + " "
         line = line + (75 - len(line))*"."
         if not task['is_done']:
-            line = line + " Not done"
+            line = line + esc(91) + " Not done" + esc(0)
         else:
-            line = line + " Done"
+            line = line + esc(92) + " Done" + esc(0)
         print(line, "\n")
 
 
 # Help information
 def cmd_help():
     print("-"*55)
-    print("new", "."*7, "Creates new task\n\t", r"'new [task name]'", end="\n\n")
+    print("new", "."*7, "Creates new task; Delimit multiple tasks with '\\'\n\t", end="")
+    print(r"'new [task 1 name] [\] [task 2 name] ...'", end="\n\n")
     print("edit", "."*6, "Edits existing task\n\t", r"'edit [task index] [new task name]'", end="\n\n")
     print("del", "."*7, "Deletes existing task(s)\n\t", r"'del [task index]' or 'del all'", end="\n\n")
     print("done", "."*6, "Marks existing task as done or not done\n\t", r"'done [task index]'", end="\n\n")
@@ -105,24 +107,30 @@ def valid_command():
             return valid_command()
 
 
-# Creates new task
+# Creates new tasks
 def new_task(command):
-    # Task created as dict
-    task_name = command[1]
-    dtask = {
-        "task_name": task_name,
-        "is_done": False
-    }
+    # Tasks created as list of dicts
+    task_names = command[1]
+    task_names = task_names.split('\\')
+    dtasks = []
+    for task_name in task_names:
+        dtasks.append(
+            {
+                "task_name": task_name,
+                "is_done": False
+            }
+        )
 
     # Loads file as dict
     with open("tasks.json") as f:
-        dtasks = json.loads(f.read())
+        file_dtasks = json.loads(f.read())
 
-    # Appends new task to file as dict
-    dtasks['tasks'].append(dtask)
+    # Appends new tasks to file as dict
+    for dtask in dtasks:
+        file_dtasks['tasks'].append(dtask)
 
     # Writes new file as dict to file
-    jtasks = json.dumps(dtasks, indent=2)
+    jtasks = json.dumps(file_dtasks, indent=2)
     with open("tasks.json", "w") as f:
         f.write(jtasks)
 
