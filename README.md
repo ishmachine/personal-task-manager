@@ -13,6 +13,7 @@ A simple Python CLI that helps you keep track of the tasks in your life.
 * Add due date functionality
 * Improve styling
 * Implement a calendar feature
+  * Includes due date functionality
   * Also with styling
 ## Resources
 * .md editing:
