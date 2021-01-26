@@ -4,9 +4,8 @@ A simple Python CLI that helps you keep track of the tasks in your life.
 ### 0.1.0
 * Bare-bones personal task manager than runs in your command line.
 ### 0.2.0 (NOT RELEASED)
-- [ ] Add multiple task creation functionality
+- [X] Add multiple task creation functionality
 - [X] Allow for marking as Not done
-- [ ] Add multiple task deletion functionality
 - [X] Add a "help" key for command guide
 ## Future Plans
 * Add folder and subtask functionality
