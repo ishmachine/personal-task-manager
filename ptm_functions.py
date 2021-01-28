@@ -1,5 +1,4 @@
 # FIXME: The first line is still fucked up during the very first iteration of the while loop
-# FIXME: Handling of exceeding character limit for tasks
 import json
 import os
 import time
@@ -198,13 +197,20 @@ def new_task(command):
     task_names = command[1]
     task_names = task_names.split('\\')
     dtasks = []
+    over_char_limit = False
     for task_name in task_names:
-        dtasks.append(
-            {
-                "task_name": task_name,
-                "is_done": False
-            }
-        )
+        if len(task_name) > 50:
+            over_char_limit = True
+        else:
+            dtasks.append(
+                {
+                    "task_name": task_name,
+                    "is_done": False
+                }
+            )
+    if over_char_limit:
+        print("One or more of your tasks were skipped because they exceeded the 50 character limit.")
+        time.sleep(3)
 
     # Loads file as dict
     with open("tasks.json") as f:
