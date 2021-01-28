@@ -233,7 +233,11 @@ def edit_task(command):
         dtasks = json.loads(f.read())
 
     # Edits tasks as dict
-    dtasks['tasks'][int(command[1]) - 1]['task_name'] = command[2]
+    if len(command[2]) > 50:
+        print("Your edit exceeds the 50 character limit.")
+        time.sleep(3)
+    else:
+        dtasks['tasks'][int(command[1]) - 1]['task_name'] = command[2]
 
     # Writes new file as dict to file
     jtasks = json.dumps(dtasks, indent=2)
