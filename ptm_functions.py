@@ -1,6 +1,16 @@
+# FIXME: The first line is still fucked up during the very first iteration of the while loop
+# FIXME: Handling of exceeding character limit for tasks
 import json
 import os
-from calendar_feature import esc
+import time
+from datetime import date
+os.system("")
+
+
+# For ANSI escape sequences
+# Refer to https://en.wikipedia.org/wiki/ANSI_escape_code
+def esc(code):
+    return f'\033[{code}m'
 
 
 # Clears the screen
@@ -20,24 +30,99 @@ def task_indices():
 
 # Displays tasks
 def display():
+    # The task part of the line
     with open("tasks.json") as f:
         dtasks = json.loads(f.read())
 
+    task_lines = []
     for index, task in enumerate(dtasks['tasks'], start=1):
-        line = "[" + str(index) + "] " + task['task_name'] + " "
-        line = line + (75 - len(line))*"."
+        task_line = "[" + str(index) + "] " + task['task_name'] + " "
+        task_line = task_line + (75 - len(task_line)) * "."
         if not task['is_done']:
-            line = line + esc(91) + " Not done" + esc(0)
+            task_line = task_line + esc(91) + " Not done" + esc(0) + " | "
         else:
-            line = line + esc(92) + " Done" + esc(0)
-        print(line, "\n")
+            task_line = task_line + esc(92) + " Done" + esc(0) + " "*4 + " | "                    # Length of 96
+        task_lines.append(task_line)
+
+    # The calendar part of the line
+    def feb_days(year):
+        if year % 4 == 0:
+            return list(range(1, 30))
+        else:
+            return list(range(1, 29))
+
+    # For strftime guide, go to https://strftime.org/
+    current_month_str = time.strftime("%B")
+    current_day = time.strftime("%d")
+    current_year = time.strftime("%Y")
+    calendar_year_struct = {
+        "January": (list(range(1, 32)), 1),
+        "February": (feb_days(int(current_year)), 2),
+        "March": (list(range(1, 32)), 3),
+        "April": (list(range(1, 31)), 4),
+        "May": (list(range(1, 32)), 5),
+        "June": (list(range(1, 31)), 6),
+        "July": (list(range(1, 32)), 7),
+        "August": (list(range(1, 32)), 8),
+        "September": (list(range(1, 31)), 9),
+        "October": (list(range(1, 32)), 10),
+        "November": (list(range(1, 31)), 11),
+        "December": (list(range(1, 32)), 12)
+    }
+    weekdays = "Su\tM\tT\tW\tTh\tF\tS"
+
+    calendar_head = []
+
+    spaces = int(len(weekdays) - len(current_month_str))
+    calendar_head.append(str(" "*spaces + esc(1) + current_month_str + esc(0)))
+    calendar_head.append(str(esc(94) + weekdays + esc(0)))
+    # Creation of the 7x6 2D list which will contain days
+    calendar_body = []
+    for i in range(0, 6):
+        temp = []
+        for j in range(0, 7):
+            temp.append(' ')
+        calendar_body.append(temp)
+
+    i = 1
+    initial_pos = (0, date(int(current_year), calendar_year_struct[current_month_str][1], 1).isoweekday())
+    begin_replace = False   # Sets the start and end of the for loop
+    for row_index, row in enumerate(calendar_body):
+        for col_index, col in enumerate(row):
+            if (row_index, col_index) == initial_pos:
+                begin_replace = True
+            if i == calendar_year_struct[current_month_str][0][-1] + 1:
+                begin_replace = False
+            if begin_replace:
+                if i == int(current_day):
+                    calendar_body[row_index][col_index] = esc(47) + esc(30) + str(i) + esc(0)
+                else:
+                    calendar_body[row_index][col_index] = str(i)
+                i += 1
+
+    calendar = [calendar_head[0], calendar_head[1]]
+    for week in calendar_body:
+        calendar.append("\t".join(week))
+
+    # Now to fill the empty space underneath the tasks if there are less task rows than calendar rows
+    if len(task_lines) < len(calendar):
+        for i in range(len(task_lines), len(calendar)):
+            task_lines.append(str(" "*85 + "| "))
+
+    # Now to put it all together
+    for i in range(0, len(calendar)):
+        print(task_lines[i], calendar[i], sep="")
+    if len(task_lines) > len(calendar):
+        for j in range(i + 1, len(task_lines)):
+            print(task_lines[j])
+    print("-"*85)
 
 
 # Help information
 def cmd_help():
     print("-"*55)
     print("new", "."*7, "Creates new task; Delimit multiple tasks with '\\'\n\t", end="")
-    print(r"'new [task 1 name] [\] [task 2 name] ...'", end="\n\n")
+    print(r"'new [task 1 name][\][task 2 name] ...'", end="\n\n")
     print("edit", "."*6, "Edits existing task\n\t", r"'edit [task index] [new task name]'", end="\n\n")
     print("del", "."*7, "Deletes existing task(s)\n\t", r"'del [task index]' or 'del all'", end="\n\n")
     print("done", "."*6, "Marks existing task as done or not done\n\t", r"'done [task index]'", end="\n\n")
