@@ -15,6 +15,7 @@ A simple Python CLI that helps you keep track of the tasks in your life.
   * Due date functionality coming in 0.3.0
 * Minor update to the help command
 * Added color to the Done/Not done indicators
+* Added 50 character limit for new tasks
 ## Future Plans
 * Add folder and subtask functionality
 * Improve styling
