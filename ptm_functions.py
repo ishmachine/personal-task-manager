@@ -1,5 +1,4 @@
 # FIXME: The first line is still fucked up during the very first iteration of the while loop
-# FIXME: Handling of exceeding character limit for tasks
 import json
 import os
 import time
@@ -11,6 +10,11 @@ os.system("")
 # Refer to https://en.wikipedia.org/wiki/ANSI_escape_code
 def esc(code):
     return f'\033[{code}m'
+
+
+# For use in main
+def sleep():
+    time.sleep(3)
 
 
 # Clears the screen
@@ -34,10 +38,21 @@ def display():
     with open("tasks.json") as f:
         dtasks = json.loads(f.read())
 
+    current_date = date.today()
     task_lines = []
     for index, task in enumerate(dtasks['tasks'], start=1):
         task_line = "[" + str(index) + "] " + task['task_name'] + " "
-        task_line = task_line + (75 - len(task_line)) * "."
+        if task["due_date"] is None:
+            task_line = task_line + (75 - len(task_line))*"."
+        else:
+            task_line = task_line + (62 - len(task_line))*"."
+            if date.fromisoformat(task["due_date"]) > current_date or task["is_done"]:
+                task_line = task_line + esc(92)
+            elif date.fromisoformat(task["due_date"]) == current_date:
+                task_line = task_line + esc(93)
+            elif date.fromisoformat(task["due_date"]) < current_date:
+                task_line = task_line + esc(91)
+            task_line = task_line + " " + task["due_date"] + esc(0) + ", "
         if not task['is_done']:
             task_line = task_line + esc(91) + " Not done" + esc(0) + " | "
         else:
@@ -50,6 +65,11 @@ def display():
             return list(range(1, 30))
         else:
             return list(range(1, 29))
+
+    due_dates = []
+    for task in dtasks["tasks"]:
+        if task["due_date"] is not None:
+            due_dates.append(date.fromisoformat(task["due_date"]))
 
     # For strftime guide, go to https://strftime.org/
     current_month_str = time.strftime("%B")
@@ -97,7 +117,14 @@ def display():
                 if i == int(current_day):
                     calendar_body[row_index][col_index] = esc(47) + esc(30) + str(i) + esc(0)
                 else:
-                    calendar_body[row_index][col_index] = str(i)
+                    day_to_add = date(int(current_year), calendar_year_struct[current_month_str][1], i)
+                    if day_to_add in due_dates:
+                        if day_to_add < date.today():
+                            calendar_body[row_index][col_index] = esc(101) + esc(30) + str(i) + esc(0)
+                        elif day_to_add > date.today():
+                            calendar_body[row_index][col_index] = esc(102) + esc(30) + str(i) + esc(0)
+                    else:
+                        calendar_body[row_index][col_index] = str(i)
                 i += 1
 
     calendar = [calendar_head[0], calendar_head[1]]
@@ -121,9 +148,11 @@ def display():
 # Help information
 def cmd_help():
     print("-"*55)
-    print("new", "."*7, "Creates new task; Delimit multiple tasks with '\\'\n\t", end="")
-    print(r"'new [task 1 name][\][task 2 name] ...'", end="\n\n")
-    print("edit", "."*6, "Edits existing task\n\t", r"'edit [task index] [new task name]'", end="\n\n")
+    print("new", "."*7, "Creates new task; Delimit multiple tasks with '\\' and dates with '**'\n\t", end="")
+    print(r"'new [task 1 name]**[yyyy-mm-dd][\][task 2 name]**[yyyy-mm-dd] ...'", end="\n\n")
+    print("edit", "."*6, "Edits existing task name or date\n\t", end="")
+    print(r"'edit [task index] [new task name]'", end="\n", sep="")
+    print("\t\tor:\n\t'edit [task index] ** [new date]'", end="\n\n")
     print("del", "."*7, "Deletes existing task(s)\n\t", r"'del [task index]' or 'del all'", end="\n\n")
     print("done", "."*6, "Marks existing task as done or not done\n\t", r"'done [task index]'", end="\n\n")
     print("help", "."*6, "Displays command help dialog\n\t", r"'help'")
@@ -157,7 +186,10 @@ def valid_command():
             elif command[0] == "edit":
                 try:
                     if int(command[1]) in task_indices():
-                        return [command[0], command[1], " ".join(command[2:])]
+                        if command[2] == "**" and len(command) == 4:
+                            return command
+                        else:
+                            return [command[0], command[1], " ".join(command[2:])]
                     else:
                         print("Invalid index.", "\n")
                         return valid_command()
@@ -192,19 +224,43 @@ def valid_command():
             return valid_command()
 
 
+def date_parser(date_string):
+    try:
+        return str(date.fromisoformat(date_string))
+    except ValueError:
+        print("Invalid due date was skipped.")
+        time.sleep(3)
+        return None
+
+
 # Creates new tasks
 def new_task(command):
     # Tasks created as list of dicts
     task_names = command[1]
     task_names = task_names.split('\\')
     dtasks = []
+    over_char_limit = False
     for task_name in task_names:
-        dtasks.append(
-            {
-                "task_name": task_name,
-                "is_done": False
-            }
-        )
+        if len(task_name.split("**")[0]) > 50:
+            over_char_limit = True
+        else:
+            if len(task_name.split("**")) == 2:
+                due_date = date_parser(task_name.split("**")[1])
+            elif len(task_name.split("**")) == 1:
+                due_date = None
+            else:
+                print("Too many delimiters. A due date was skipped.")
+                due_date = None
+            dtasks.append(
+                {
+                    "task_name": task_name.split("**")[0],
+                    "is_done": False,
+                    "due_date": due_date
+                }
+            )
+    if over_char_limit:
+        print("One or more of your tasks were skipped because they exceeded the 50 character limit.")
+        time.sleep(3)
 
     # Loads file as dict
     with open("tasks.json") as f:
@@ -227,7 +283,20 @@ def edit_task(command):
         dtasks = json.loads(f.read())
 
     # Edits tasks as dict
-    dtasks['tasks'][int(command[1]) - 1]['task_name'] = command[2]
+    if command[2] == "**" and len(command) == 4 and command[-1] != '':
+        due_date = date_parser(command[3])
+        if due_date is not None:
+            dtasks['tasks'][int(command[1]) - 1]['due_date'] = due_date
+        else:
+            pass
+    elif command[2] == "**" and len(command) == 4 and command[-1] == '':
+        dtasks['tasks'][int(command[1]) - 1]['due_date'] = None
+    else:
+        if len(command[2]) > 50:
+            print("Your edit exceeds the 50 character limit.")
+            time.sleep(3)
+        else:
+            dtasks['tasks'][int(command[1]) - 1]['task_name'] = command[2]
 
     # Writes new file as dict to file
     jtasks = json.dumps(dtasks, indent=2)
