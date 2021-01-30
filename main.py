@@ -12,6 +12,10 @@ func_equiv = {
 ptm.display()
 while True:
     cmd = ptm.valid_command()
-    func_equiv[cmd[0]](cmd)
+    try:
+        func_equiv[cmd[0]](cmd)
+    except TypeError:
+        print("Invalid number of arguments.")
+        ptm.sleep()
     ptm.cls()
     ptm.display()
