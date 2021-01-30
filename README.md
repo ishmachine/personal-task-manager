@@ -15,12 +15,16 @@ A simple Python CLI that helps you keep track of the tasks in your life.
   * Due date functionality coming in 0.3.0
 * Minor update to the help command
 * Added color to the Done/Not done indicators
+### 0.3.0
+* Due date functionality has been added
+  * new_task function allows for date input
+  * edit_task function allows for date editing
+  * help command provides proper syntax
+* Calendar now displays color-coded days according to the tasks
+* Fixed error when passing invalid number of arguments
 ## Future Plans
 * Add folder and subtask functionality
 * Improve styling
-* Implement a calendar feature
-  * Includes due date functionality
-  * Also with styling
 ## Resources
 * .md editing:
   * https://guides.github.com/features/mastering-markdown/
