@@ -1,4 +1,4 @@
-# FIXME: The first line is still fucked up during the very first iteration of the while loop
+# FIXME: The first line is still messed up during the very first iteration of the while loop
 import json
 import os
 import time
