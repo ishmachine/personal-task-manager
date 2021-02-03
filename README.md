@@ -25,6 +25,7 @@ A simple Python CLI that helps you keep track of the tasks in your life.
 ## Future Plans
 * Add folder and subtask functionality
 * Improve styling
+* Allow for different date formats
 ## Resources
 * .md editing:
   * https://guides.github.com/features/mastering-markdown/
